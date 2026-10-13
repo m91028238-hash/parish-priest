@@ -1,0 +1,23 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="game-version" content="pp-demo-1"><title>Parish Priest</title>
+<style>body{margin:0;background:#0d0b09;color:#eadfca;font-family:Georgia,serif}#bg{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;transition:opacity .6s}
+.wrap{max-width:720px;margin:auto}#hud{display:flex;gap:6px;flex-wrap:wrap;padding:8px}.p{border:1px solid #b8913c;border-radius:14px;padding:3px 10px;font-size:14px;background:#1c1610}
+#txt{padding:6px 16px 4px;font-size:18px;line-height:1.5;white-space:pre-line}#ch{padding:8px 16px 24px;display:flex;flex-direction:column;gap:10px}
+button{font:inherit;font-size:16px;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid #b8913c;background:#231b12;color:#f3e6c8}button:active{background:#3a2c18}h1{font-weight:normal;color:#d9b45a;margin:10px 16px 0}</style></head>
+<body><div class="wrap"><img id="bg" src="img/church.jpg" alt=""><h1 id="t">Parish Priest</h1><div id="hud"></div><div id="txt"></div><div id="ch"></div></div>
+<script>
+let S={faith:5,community:5,money:5,bishop:5};
+const N={
+start:{img:"church",t:"Chapter 1: St Anne's",x:"You are Fr. Daniel, newly ordained and sent to St Anne's, a dying parish in a wet northern town. Old Fr. Brennan has retired and left you the keys, a leaking roof and forty parishioners.\n\nOn your first night, a car is parked outside the church with its engine running. A young man sits inside, staring at the door.",c:[["Go out and speak to him",{community:1},"youth"],["Leave him be and lock up",{community:-1},"office"]]},
+youth:{img:"church",x:"He winds down the window. \"I'm Liam. I haven't been in a church since my mum's funeral. I don't even know why I'm here.\" He asks if you're 'the priest who hears the bad stuff'.",c:[["Offer to hear his confession now",{faith:2},"confession"],["Invite him to Sunday Mass instead",{community:1},"office"]]},
+confession:{img:"confession",x:"In the dim confessional, Liam talks for twenty minutes: anger, a fight, a lie that cost a friend his job. He asks if God can really forgive that.\n\nWhatever is said here stays sealed forever.",c:[["Speak gently of mercy and give absolution",{faith:2,community:1},"office"],["Set a hard penance: he must put things right with his friend",{faith:1},"office"]]},
+office:{img:"office",x:"Monday. The office smells of damp. On the desk: a £14,000 roof quote, a letter from the bishop asking whether St Anne's should merge with the next parish, and a wealthy local developer's offer to 'help', if you back his plan to build on the church field.",c:[["Accept the developer's money",{money:4,community:-3,bishop:-1},"end"],["Refuse and start a parish fundraiser",{community:2,money:1},"end"],["Write to the bishop asking for more time",{bishop:2,money:-1},"end"]]},
+end:{img:"church",x:"",c:[["Play again",null,"restart"]]}};
+const L=["Faith","Community","Money","Bishop"];
+function hud(){document.getElementById("hud").innerHTML=Object.keys(S).map((k,i)=>`<span class=p>${L[i]} ${S[k]}</span>`).join("")}
+function go(id){if(id=="restart"){S={faith:5,community:5,money:5,bishop:5};id="start"}
+const n=N[id],bg=document.getElementById("bg");bg.style.opacity=0;setTimeout(()=>{bg.src="img/"+n.img+".jpg";bg.style.opacity=1},300);
+let x=n.x;if(id=="end"){const tot=S.faith+S.community+S.money+S.bishop;x=`End of Chapter 1.\n\n${S.community>=7?"Word spreads that the new priest actually listens. More faces appear on Sunday.":"Sunday is still half-empty, but you have time."}\n${S.money>=8?"The roof is fixed, but people whisper about the developer.":"The roof still leaks."}\n${S.bishop>=6?"The bishop grants St Anne's a year's reprieve.":"The merger letter sits unanswered on your desk."}\n\nMore chapters coming soon.`}
+document.getElementById("txt").textContent=x;hud();
+document.getElementById("ch").innerHTML="";n.c.forEach(([l,e,nx])=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>{if(e)for(const k in e)S[k]=Math.max(0,Math.min(10,S[k]+e[k]));go(nx);scrollTo(0,0)};document.getElementById("ch").appendChild(b)})}
+go("start");
+</script></body></html>
