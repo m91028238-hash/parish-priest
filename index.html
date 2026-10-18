@@ -1,23 +1,154 @@
-<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="game-version" content="pp-demo-1"><title>Parish Priest</title>
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="game-version" content="pp-2.0"><title>Parish Priest v2</title>
 <style>body{margin:0;background:#0d0b09;color:#eadfca;font-family:Georgia,serif}#bg{width:100%;aspect-ratio:16/9;object-fit:cover;display:block;transition:opacity .6s}
-.wrap{max-width:720px;margin:auto}#hud{display:flex;gap:6px;flex-wrap:wrap;padding:8px}.p{border:1px solid #b8913c;border-radius:14px;padding:3px 10px;font-size:14px;background:#1c1610}
-#txt{padding:6px 16px 4px;font-size:18px;line-height:1.5;white-space:pre-line}#ch{padding:8px 16px 24px;display:flex;flex-direction:column;gap:10px}
-button{font:inherit;font-size:16px;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid #b8913c;background:#231b12;color:#f3e6c8}button:active{background:#3a2c18}h1{font-weight:normal;color:#d9b45a;margin:10px 16px 0}</style></head>
-<body><div class="wrap"><img id="bg" src="img/church.jpg" alt=""><h1 id="t">Parish Priest</h1><div id="hud"></div><div id="txt"></div><div id="ch"></div></div>
+.wrap{max-width:720px;margin:auto}#bar{display:flex;justify-content:space-between;gap:8px;padding:5px 12px;font-size:12px;color:#c9b48a;background:#16110c;border-bottom:1px solid #3a2c18}
+#hud{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:8px}.p{border:1px solid #b8913c;border-radius:12px;padding:3px 8px;font-size:13px;background:#1c1610;text-align:center}.p i{display:block;height:3px;margin-top:3px;background:#3a2c18;border-radius:2px}.p i b{display:block;height:100%;background:#d9b45a;border-radius:2px}.p.w{border-color:#c0503a}.p.w i b{background:#c0503a}
+#note{padding:0 16px;font-size:13px;color:#b9a27a;font-style:italic;white-space:pre-line}#txt{padding:6px 16px 4px;font-size:18px;line-height:1.5;white-space:pre-line}#ch{padding:8px 16px 24px;display:flex;flex-direction:column;gap:10px}
+button{font:inherit;font-size:16px;text-align:left;padding:12px 14px;border-radius:10px;border:1px solid #b8913c;background:#231b12;color:#f3e6c8}button:active{background:#3a2c18}h1{font-weight:normal;color:#d9b45a;margin:10px 16px 0}.hid{display:none!important}</style></head>
+<body><div class="wrap"><img id="bg" src="img/church.jpg" alt=""><div id="bar"><span id="b1"></span><span id="b2"></span></div><h1 id="t">Parish Priest</h1><div id="hud"></div><div id="note"></div><div id="txt"></div><div id="ch"></div></div>
 <script>
-let S={faith:5,community:5,money:5,bishop:5};
-const N={
-start:{img:"church",t:"Chapter 1: St Anne's",x:"You are Fr. Daniel, newly ordained and sent to St Anne's, a dying parish in a wet northern town. Old Fr. Brennan has retired and left you the keys, a leaking roof and forty parishioners.\n\nOn your first night, a car is parked outside the church with its engine running. A young man sits inside, staring at the door.",c:[["Go out and speak to him",{community:1},"youth"],["Leave him be and lock up",{community:-1},"office"]]},
-youth:{img:"church",x:"He winds down the window. \"I'm Liam. I haven't been in a church since my mum's funeral. I don't even know why I'm here.\" He asks if you're 'the priest who hears the bad stuff'.",c:[["Offer to hear his confession now",{faith:2},"confession"],["Invite him to Sunday Mass instead",{community:1},"office"]]},
-confession:{img:"confession",x:"In the dim confessional, Liam talks for twenty minutes: anger, a fight, a lie that cost a friend his job. He asks if God can really forgive that.\n\nWhatever is said here stays sealed forever.",c:[["Speak gently of mercy and give absolution",{faith:2,community:1},"office"],["Set a hard penance: he must put things right with his friend",{faith:1},"office"]]},
-office:{img:"office",x:"Monday. The office smells of damp. On the desk: a £14,000 roof quote, a letter from the bishop asking whether St Anne's should merge with the next parish, and a wealthy local developer's offer to 'help', if you back his plan to build on the church field.",c:[["Accept the developer's money",{money:4,community:-3,bishop:-1},"end"],["Refuse and start a parish fundraiser",{community:2,money:1},"end"],["Write to the bishop asking for more time",{bishop:2,money:-1},"end"]]},
-end:{img:"church",x:"",c:[["Play again",null,"restart"]]}};
-const L=["Faith","Community","Money","Bishop"];
-function hud(){document.getElementById("hud").innerHTML=Object.keys(S).map((k,i)=>`<span class=p>${L[i]} ${S[k]}</span>`).join("")}
-function go(id){if(id=="restart"){S={faith:5,community:5,money:5,bishop:5};id="start"}
-const n=N[id],bg=document.getElementById("bg");bg.style.opacity=0;setTimeout(()=>{bg.src="img/"+n.img+".jpg";bg.style.opacity=1},300);
-let x=n.x;if(id=="end"){const tot=S.faith+S.community+S.money+S.bishop;x=`End of Chapter 1.\n\n${S.community>=7?"Word spreads that the new priest actually listens. More faces appear on Sunday.":"Sunday is still half-empty, but you have time."}\n${S.money>=8?"The roof is fixed, but people whisper about the developer.":"The roof still leaks."}\n${S.bishop>=6?"The bishop grants St Anne's a year's reprieve.":"The merger letter sits unanswered on your desk."}\n\nMore chapters coming soon.`}
-document.getElementById("txt").textContent=x;hud();
-document.getElementById("ch").innerHTML="";n.c.forEach(([l,e,nx])=>{const b=document.createElement("button");b.textContent=l;b.onclick=()=>{if(e)for(const k in e)S[k]=Math.max(0,Math.min(10,S[k]+e[k]));go(nx);scrollTo(0,0)};document.getElementById("ch").appendChild(b)})}
-go("start");
+const K=["faith","community","money","bishop"],L=["Faith","Community","Money","Bishop"],SN={A:"Advent",X:"Christmas",O:"Ordinary Time",L:"Lent",E:"Easter",P:"Pentecost"},IM={c:"church",k:"confession",o:"office"};
+// [id, seasons, img, minYear, req, text, choices[[label, fx]]]  fx: f c m b deltas, +flag / -flag
+const EV=[
+["roof","","c",1,"","Rain is coming through the roof above the Lady Chapel again, and the builder's quote has gone up since last time.",[["Launch a parish appeal","c-3 m6"],["Pay from the reserves","m-8 b2"],["Buckets for now","f-3 c-2"]]],
+["dev","","o",1,"!sold !fieldgone","A local developer renews his offer for the church field, this time with a much bigger cheque.",[["Sell the field","m14 c-8 b-2 +sold"],["Refuse him","c4 m-2"],["Pass it to the diocese","b3 m-1"]]],
+["dev2","","c",1,"sold","Diggers arrive on the old church field. A group of parishioners stands at the fence in silence.",[["Join them and apologise","c4 b-3 -sold +fieldgone"],["Explain where the money is going","m-3 c2 -sold +fieldgone"],["Stay in the presbytery","c-6 -sold +fieldgone"]]],
+["liam","","c",1,"!liam !liamdone","Liam, the young man who sat outside in his car on your first night, is back. He wants to become Catholic properly.",[["Enrol him in the RCIA course","f5 c2 +liam"],["Suggest he waits a year","f-2"]]],
+["liam2","E","c",1,"liam","At the Easter Vigil Liam is baptised. His dad, who hasn't spoken to him in years, is in the back pew.",[["Throw a parish party afterwards","c6 m-3 -liam +liamdone"],["Keep it simple and go over to his dad","f5 -liam +liamdone"]]],
+["fun","","c",1,"","A young mother has died suddenly. Her husband asks for a funeral Mass but cannot pay anything.",[["Waive all the fees","m-4 c5 f2"],["Ask the SVP to help","c2 m-1"],["Charge the usual fee","m3 c-6"]]],
+["rum","","o",1,"","A post on the town's Facebook group claims you were seen leaving a pub late with a woman. It was your sister, visiting.",[["Mention it lightly from the pulpit","c2 b-1"],["Ignore it","c-4"],["Tell the bishop before he hears","b4 c-1"]]],
+["org","","c",1,"!hale","Mrs Hale, organist for forty-one years, has started missing notes and whole verses.",[["Gently ask her to retire","c-3 f2 +hale"],["Find her an assistant","m-4 c3"],["Say nothing","f-3"]]],
+["org2","","c",1,"hale","Mrs Hale has stopped coming to Mass altogether since she retired.",[["Visit her at home","c4 f2 -hale"],["Leave her be","c-3 -hale"]]],
+["food","","o",1,"","The food bank in the hall has run out by Thursday three weeks running.",[["Hold a second collection","m-3 c5 f2"],["Partner with the Anglicans","c4 b1"],["Scale it back","c-5 m2"]]],
+["rept","","k",1,"","A man you don't recognise comes to confession every week, confessing the same thing in more and more detail.",[["Ask to see him outside confession","f2 c-1"],["Keep hearing him patiently","f3 c-1"],["Suggest he also sees a counsellor","c1 f-1"]]],
+["wed","","o",1,"","A couple who live together ask to marry in the church in six weeks.",[["Insist on full marriage preparation","f4 c-3"],["Fast-track it","c4 b-3 f-1"],["A short course, then the wedding","c2 f1"]]],
+["care","","o",1,"","Your caretaker has been drinking on the job. He has been at St Anne's for twenty years.",[["Let him go","m2 c-4"],["Keep him on if he gets help","c3 m-2"],["A quiet warning","f-1 c-1"]]],
+["coll","","o",1,"","The Sunday collection is £300 short. Only two counters had access.",[["Call the police","c-5 m2 b1"],["Quietly change the counters","m-2 c1"],["Let it go","m-4 f-1"]]],
+["youth","","c",1,"","Some teenagers want to start a youth group. With a band.",[["Fund it","m-5 c6"],["Allow it, but no money","c3"],["Decline","c-4 f1"]]],
+["bvis","","c",1,"","The bishop is coming for a pastoral visit next week.",[["Polish everything","m-5 b7"],["Show him the parish as it is","b2 c2"],["Ask him for funding while he's here","b-3 m6"]]],
+["dying","","c",1,"","A long-serving parishioner tells you she is dying and wants to make peace with her estranged son.",[["Drive to see the son yourself","f4 c3 m-1"],["Pray with her and write to him","f3"],["Leave it to the family","c-3"]]],
+["leg","","o",1,"","A solicitor writes: a late parishioner has left St Anne's £20,000, on condition of a statue in her memory.",[["Accept and commission the statue","m8 c2"],["Ask to redirect it to the roof","m10 c-3"],["Decline","f2 m-1"]]],
+["cut","","o",1,"","The diocese wants you to drop a weekday Mass to cover a neighbouring parish.",[["Agree","b5 c-4"],["Refuse","b-6 c3"],["Shuffle the times","b2 c-1 f-1"]]],
+["latin","","c",1,"","A group asks for a monthly Latin Mass.",[["Agree","f4 c-2 b-2"],["Refer it to the bishop","b2 c-1"],["Decline for now","c-3"]]],
+["music","","c",1,"","Some regulars complain the eleven o'clock music sounds like a holiday camp.",[["Back the music group","c2 f-2"],["Bring back traditional hymns","f3 c-3"],["Alternate Sundays","c1 m-1"]]],
+["boil","AO","o",1,"","The boiler fails in the first cold snap.",[["Replace it","m-10 c3"],["Coats on for a month","c-5 f1"],["Ask the parish to chip in","m-3 c2"]]],
+["refu","","c",1,"","A family of five, newly arrived refugees, are sleeping in the church porch.",[["Open the hall for them","c3 m-4 f4 b-1"],["Contact the council","b2 c-1"],["Ask them to move on","c-6 f-5"]]],
+["gamb","","k",1,"","In confession a man speaks of gambling debts he's hiding from his wife.",[["Urge him to tell her","f3"],["Point him to a support group","f2 c1"],["Encourage him to come to you for help outside confession","f2 c2 m-3"]]],
+["press","","o",1,"","A local reporter wants your comment on abuse scandals in the wider Church.",[["Speak honestly about safeguarding","c3 b-3 f2"],["Refer him to the diocese","b3 c-2"],["No comment","c-4"]]],
+["safe","","o",1,"","A safeguarding audit finds your volunteer checks are out of date.",[["Suspend volunteers until it's done","c-5 b5"],["Rush the paperwork","b2 m-2"],["Ask for an extension","b-4"]]],
+["fc","","c",1,"","Parents only appear at Mass in the months before First Communion.",[["Require attendance records","f3 c-4"],["Welcome them warmly","c4 f-1"],["Run a parents' course","f2 c2 m-2"]]],
+["tired","","o",1,"","You haven't had a day off in seven weeks.",[["Go on retreat","f6 c-3 m-2"],["Push on","f-5 c2"],["Ask a neighbouring priest to cover","b-1 f3"]]],
+["frnd","","o",1,"","An old seminary friend phones late. He is thinking of leaving the priesthood.",[["Drive over to see him","f3 c-2"],["Talk for hours","f2"],["Quietly alert his bishop","b2 f-2"]]],
+["bap","","c",1,"","Non-practising parents want their baby baptised, mostly for the photos.",[["Baptise after a preparation talk","f2 c2"],["Refuse","f2 c-5"],["Baptise, no questions","c4 f-3"]]],
+["bingo","","o",1,"","Friday bingo makes good money but brings rowdy nights and complaints from neighbours.",[["Keep it","m5 c-1 f-2"],["Close it","m-5 f2"],["Hire a steward","m1 c1"]]],
+["graf","","c",1,"","Graffiti appears on the church door overnight.",[["Get the youth to paint over it","c3 m-1"],["Call the police","b1 c-1"],["Leave a note inviting the artist in","f2 c1"]]],
+["hosp","","c",1,"","The hospital rings at 3am: a man is dying and asking for a priest.",[["Go immediately","f5 c2"],["Ask the hospital chaplain","f-4"]]],
+["suic","","c",1,"","A teenager has died by suicide. The family is afraid of what the Church will say.",[["Offer a full funeral Mass and stay with them","f4 c5"],["Arrange a quiet private service","c1 f1"]]],
+["pc","","o",1,"","The parish council chair and the treasurer are no longer speaking.",[["Mediate","c3 f-1"],["Replace both","c-4 b1"],["Wait it out","c-2"]]],
+["flat","","o",1,"","The empty flat above the presbytery could be rented out.",[["Rent it","m6 c-1"],["House a homeless parishioner","c3 f3 m-2"],["Leave it empty","m-1"]]],
+["viral","","o",1,"","A clip of your homily has gone viral, praised by some and mocked by others.",[["Enjoy the attention","c4 b-3"],["Ask for it to be taken down","b2 c-2"],["Say nothing","f1"]]],
+["sound","","o",1,"","A wealthy parishioner offers to pay for a new sound system, if her son reads every Sunday.",[["Accept","m6 c-3"],["Thank her, decline the condition","m2 f1"],["Decline","f2 m-1"]]],
+["celeb","","c",1,"","A footballer and his fiancée want to marry at St Anne's with a magazine shoot.",[["Allow it","m8 f-3 c2"],["Allow it, no cameras inside","m3 f1"],["Decline","f2 m-1"]]],
+["hist","","o",1,"","An elderly woman tells you a priest who served here in the 1970s abused her brother.",[["Report it at once and support her","b5 f3 c-4"],["Meet her with the safeguarding lead","b3 f3 c-2"]]],
+["sis","","c",1,"","A Sister of Mercy, newly moved to town, offers to help in the parish.",[["Ask her to lead a prayer group","f5 c2"],["Ask her to run the SVP","c4 m1"]]],
+["goss","","c",1,"","There is talk that you favour the old families.",[["Spend a month visiting the new estates","c5 m-1 f-1"],["Ignore it","c-3"]]],
+["wine","","c",1,"","The altar wine supplier has gone bust; the cheap replacement is of doubtful validity.",[["Pay for proper altar wine","m-3 f2"],["Use it anyway","f-4 m1"]]],
+["ball","","o",1,"","The fundraising committee proposes a parish ball.",[["Go ahead","m6 c3 f-1"],["Not this year","f1 c-2"]]],
+["door","","c",1,"","A woman knocks at midnight, bruised, saying she can't go home.",[["Call a refuge and wait with her","c3 f4"],["Give her the hall keys","c2 m-1 b-2"],["Call the police","b1 c1"]]],
+["voc","","c",1,"!voc !vocdone","Tom, a shy altar server, asks if someone like him could be a priest.",[["Encourage him","f5 b3 +voc"],["Tell him to finish school first","f1"]]],
+["voc2","","o",2,"voc","Tom has been accepted for seminary. His family can't afford the costs.",[["Hold a parish collection","m-4 c4 b3 -voc +vocdone"],["Ask the diocese","b2 -voc +vocdone"]]],
+["merg","","o",1,"","The merger letter returns: Mass numbers are down across the deanery.",[["Accept a cluster arrangement","b6 c-5"],["Fight it","b-6 c5"],["Propose sharing a curate","b2 m-3"]]],
+["debt","","o",1,"!debt !debtdone","The accounts show a loan Fr Brennan never mentioned.",[["Tell the parish","c-3 m2 f2 +debtdone"],["Quietly repay it","m-8 +debtdone"],["Ask the diocese for help","b-3 m4 +debt"]]],
+["debt2","","o",1,"debt","The diocesan finance office wants a repayment plan for the old loan.",[["Agree monthly payments","m-6 b4 -debt +debtdone"],["Ask them to write it off","b-5 -debt +debtdone"]]],
+["bren","","c",1,"","Fr Brennan, retired, keeps turning up after Mass and contradicting you.",[["Give him a role","c3 f2 b-1"],["Ask him to stay away","c-4"],["Have tea and listen","f2"]]],
+["phone","","c",1,"","Someone's phone rings during the consecration. Again.",[["Laugh it off","c2 f-1"],["Announce a phones-off rule","f2 c-2"]]],
+["web","","o",1,"","The parish website was last updated years ago.",[["Pay a designer","m-4 c4"],["Let a teenager do it","c2"],["Leave it","c-2"]]],
+["aff","","k",1,"","A married woman confesses an affair and asks what she should do.",[["Counsel her to end it","f3"],["Encourage her to talk to her husband","f2 c-1"]]],
+["lour","","o",1,"","Parishioners want a pilgrimage to Lourdes.",[["Organise it","c5 f4 m-4"],["Too costly this year","c-2"]]],
+["anon","","o",1,"","An anonymous letter to the bishop accuses you of unorthodox preaching.",[["Ask to meet the bishop","b2 f-1"],["Write a reply","b-1 f1"],["Preach the same message again","c-2 f2 b-2"]]],
+["lone","","o",1,"","The presbytery is very quiet tonight. A parishioner invites you to her family's Sunday lunch.",[["Accept","c3 f-1"],["Stay in and pray","f3 c-1"]]],
+["chair","","o",1,"","The finance committee wants to replace the pews with chairs.",[["Agree","m-5 c2"],["Keep the pews","c-2 f1"]]],
+["ecu","","c",1,"","The Anglican vicar suggests a joint Good Friday walk of witness.",[["Agree warmly","c4 b-1"],["Ask the bishop first","b2"],["Decline","c-3"]]],
+["vand","","c",1,"","The tabernacle has been forced open overnight.",[["Hold a Mass of reparation","f5 c2"],["Install cameras","m-5 b2"]]],
+["wkend","","o",1,"","A builder offers to repoint the tower for cash, no paperwork.",[["Accept","m3 b-4"],["Insist on a proper contract","m-4 b2"]]],
+["kid","","c",1,"","A toddler screams through the homily; an older parishioner tuts loudly.",[["Make a joke of it","c3"],["Set up a crying room","m-3 c3"],["Say nothing","c-1"]]],
+// seasonal
+["adv1","A","o",1,"","Advent. The parish wants a big Christmas fair.",[["Hold it","m6 c3 f-1"],["Keep a quiet Advent","f4 m-1"]]],
+["adv2","A","k",1,"","The Advent penitential service draws a long queue for confession.",[["Invite neighbouring priests","f3 c2 b1"],["Hear them all yourself","f5 c-1"]]],
+["adv3","A","c",1,"","The Advent wreath has scorched a pew cushion.",[["Switch to LED candles","m-1 f-2"],["Keep real candles, more care","f2 m-2"]]],
+["xm1","X","c",1,"","Midnight Mass: the church is full of faces you've never seen.",[["Preach a warm welcome","c6"],["Preach on regular attendance","f2 c-4"]]],
+["xm2","X","c",1,"","On Christmas Day you're invited to three dinners. One parishioner will be alone.",[["Spend it with the one alone","c3 f3"],["Go to your family","f2 c-2"]]],
+["xm3","X","c",1,"","The figure of the infant Jesus has been stolen from the crib.",[["Appeal on local radio","c4"],["Quietly buy a new one","m-2"]]],
+["len1","L","c",1,"","Ash Wednesday. Commuters ask for ashes outside the station.",[["Do ashes on the street","c5 b-1"],["Only in church","f2 c-2"]]],
+["len2","L","o",1,"","The Lenten fish supper committee wants to double the price.",[["Agree","m4 c-1"],["Keep it cheap","c3 m-1"]]],
+["len3","L","c",1,"","Only six people come to Stations of the Cross.",[["Let the youth lead one week","c3 f2"],["Keep it as it is","f1 c-1"]]],
+["len4","L","k",1,"","Someone asks for a general absolution service to clear the Easter queue.",[["Explain the norms and add confession hours","f4 c-1"],["Ask the bishop","b2"]]],
+["eas1","E","c",1,"","Easter Vigil: rain, and the new fire won't light.",[["Use the porch","f2"],["Wait it out in the rain","f4 c-2"]]],
+["eas2","E","c",1,"","Easter attendance surges; the next Sunday it collapses.",[["Visit those who came","c5 m-1"],["Accept the pattern","f-2"]]],
+["eas3","E","c",1,"","First Communion day: a mother objects to the dress code.",[["Relax it","c3 b-1"],["Hold firm","f2 c-3"]]],
+["pen1","P","c",1,"","The bishop comes to confirm thirty young people.",[["Lay on a big celebration","m-4 b5 c3"],["A simple, careful liturgy","b2 f2"]]],
+["pen2","P","c",1,"","A charismatic prayer group asks to meet in the church.",[["Allow it","f3 c-2"],["Allow it in the hall","c1 b1"]]],
+["ord1","O","c",1,"","Summer. Families are away and attendance drops.",[["Run a holiday club","c5 m-3"],["Rest while it's quiet","f3 c-2"]]],
+["ord2","O","o",1,"","Parish fete day, and rain is forecast.",[["Go ahead anyway","m4 c2"],["Postpone","m-2"]]],
+["ord3","O","c",1,"","November. The book of the dead is full of names.",[["Hold a remembrance Mass","f4 c3"],["Read the names through the month","f2"]]],
+// milestone / harder
+["mass2","","c",2,"mass2","The new second Sunday Mass is drawing families, but the choir won't cover both.",[["Start a family choir","c4 m-1"],["Said Mass, no music","f1 c-1"]]],
+["cur1","","o",3,"curate","Fr Tomasz, your curate, is popular but quietly homesick.",[["Give him a week at home","c-2 f2 m-2"],["Keep him busy","c3 f-2"]]],
+["cur2","","c",3,"curate","Fr Tomasz wants to start a Polish Mass.",[["Yes","c5 b1"],["Not yet","c-3"]]],
+["cur3","","k",3,"curate","Fr Tomasz asks your advice after a confession that shook him.",[["Talk it through without details","f3"],["Send him to a spiritual director","f2 m-1"]]],
+["sch1","","o",4,"school","The parish school's inspection is due; the head wants you more involved.",[["Chair the governors","c4 f-2 b2"],["Visit weekly","c2 f-1"]]],
+["sch2","","o",4,"school","The school needs £40,000 for a new classroom.",[["Launch a campaign","m-5 c5"],["Ask the diocese","b-2 m3"]]],
+["sch3","","o",4,"school","A teacher is accused of hitting a child; the parents go to the papers.",[["Suspend him pending inquiry","b4 c-3"],["Back him publicly","c-6 b-4"]]],
+["hall","","o",5,"hall","The new parish hall is booked solid, including a class some find inappropriate.",[["Keep the bookings","m5 c-2"],["Cancel that class","f1 m-3 c-1"]]],
+["levy","","o",3,"","The diocesan levy goes up again.",[["Pay it","m-10 b4"],["Ask to defer","b-6"]]],
+["mrg2","","c",3,"","A neighbouring parish has been folded into yours; its people feel unwelcome.",[["Hold a joint welcome Mass","c5 m-2"],["Let them settle in","c-5"]]],
+["dean","","o",4,"!dean","The bishop asks you to be dean.",[["Accept","b6 f-3 c-2 +dean"],["Decline","b-4 f2"]]],
+["dean2","","o",4,"dean","Deanery meetings are eating your week.",[["Delegate","b-2 c2"],["Keep going","b3 f-3 c-2"]]],
+["insur","","o",2,"","The insurance premium on the listed building has doubled.",[["Pay it","m-8"],["Lower the cover","m-2 b-3"]]],
+["thief","","o",3,"","A long-trusted volunteer has been taking from the parish account for years.",[["Prosecute","m3 c-6 b2"],["Ask for repayment privately","m2 f2 b-3"]]],
+];
+const MS={2:["A second Sunday Mass is added.","mass2","c2 m2"],3:["A curate, Fr Tomasz, joins you.","curate","b4 m-4"],4:["St Anne's takes on the parish primary school.","school","c4 b2 m-3"],5:["The new parish hall opens.","hall","c3 m2"],6:["St Anne's is now one of the largest parishes in the diocese.","","b3"]};
+const END={faith:["Running dry","You stop being able to pray. After a long talk, the bishop sends you on extended leave, and another priest takes St Anne's.","You give yourself entirely to prayer and fasting. Within a year you have asked to join an enclosed monastery, and St Anne's needs a new priest."],
+community:["Empty pews","The congregation has drifted away. The diocese merges St Anne's into the next parish and the church is locked on weekdays.","You said yes to everyone. One Tuesday you collapse in the sacristy; the doctor orders six months' rest, and someone else takes over."],
+money:["Parish closed","The accounts are empty. The diocese closes St Anne's and the building goes up for sale.","The reserves have grown so large that rumours of hoarding reach the papers. The diocese audits the parish and moves you on."],
+bishop:["Transferred","The bishop has had enough. You're transferred to a remote parish on the coast.","The bishop wants you closer. You're appointed his secretary and leave St Anne's behind."]};
+const $=id=>document.getElementById(id),st=localStorage;
+let G=null;
+function season(w){w=w%52;return w<4?"A":w<6?"X":w<14?"O":w<20?"L":w<27?"E":w<29?"P":"O"}
+function yr(){return Math.floor(G.wk/52)+1}
+function has(r){return r.split(" ").every(t=>!t||(t[0]=="!"?!G.fl[t.slice(1)]:G.fl[t]))}
+function fx(s,scale){const d={};s.split(" ").forEach(t=>{if(!t)return;if(t[0]=="+")G.fl[t.slice(1)]=1;else if(t[0]=="-"&&isNaN(t[1]))delete G.fl[t.slice(1)];else{const k=K["fcmb".indexOf(t[0])];let v=+t.slice(1);if(scale){const y=yr();v=Math.round(v<0?v*(1+.15*(y-1)):v*Math.max(.6,1-.05*(y-1)))}d[k]=(d[k]||0)+v}});
+for(const k in d)G.S[k]=Math.max(0,Math.min(100,G.S[k]+d[k]));return d}
+function fmt(d){return Object.keys(d).filter(k=>d[k]).map(k=>L[K.indexOf(k)]+" "+(d[k]>0?"+":"−")+Math.abs(d[k])).join(" · ")}
+function newWeek(){const y=yr(),s=season(G.wk);let n=[];
+if(G.wk%52==0&&G.wk){n.push("Year "+y+" begins.");const m=MS[y];if(m){n.push(m[0]);if(m[1])G.fl[m[1]]=1;fx(m[2])}if(y>6)n.push("Expectations keep rising.")}
+if(G.wk%52==4)n.push("Christmas.");if(G.wk%52==14)n.push("Lent begins.");if(G.wk%52==20)n.push("Easter.");if(G.wk%52==27)n.push("Pentecost.");
+const drain={money:1-Math.floor(y*.6)};if(y>1){const r=K[Math.floor(Math.random()*4)];drain[r]=(drain[r]||0)-Math.floor(y/2)};for(const k in drain)G.S[k]=Math.max(0,G.S[k]+drain[k]);
+let pool=EV.filter(e=>(!e[1]||e[1].includes(s))&&y>=e[3]&&has(e[4])&&!G.rec.includes(e[0]));
+const sea=pool.filter(e=>e[1]),cnt=y>=3?3:2+(Math.random()<.4?1:0),q=[];
+if(sea.length&&Math.random()<.6)q.push(sea[Math.floor(Math.random()*sea.length)][0]);
+while(q.length<cnt&&pool.length>q.length){const e=pool[Math.floor(Math.random()*pool.length)][0];if(!q.includes(e))q.push(e)}
+G.q=q;G.qi=0;G.rec=G.rec.concat(q).slice(-30);G.note=n.join(" ");save()}
+function save(){st.setItem("pp_save",JSON.stringify(G))}
+function bar(){const y=yr();$("b1").textContent=`Week ${G.wk%52+1} · Year ${y}`;$("b2").textContent=`${SN[season(G.wk)]} · ${120+y*40+G.wk%52} parishioners`}
+function hud(){$("hud").innerHTML=K.map((k,i)=>{const v=G.S[k];return`<span class="p${v<15||v>85?" w":""}">${L[i]} ${v}<i><b style="width:${v}%"></b></i></span>`}).join("")}
+let cur="img/church.jpg",tm;function setImg(i){const bg=$("bg"),src="img/"+i+".jpg";if(cur==src)return;cur=src;clearTimeout(tm);bg.style.opacity=0;tm=setTimeout(()=>{bg.src=src;bg.style.opacity=1},300)}
+function btns(list){$("ch").innerHTML="";list.forEach(([l,f])=>{const b=document.createElement("button");b.textContent=l;b.onclick=f;$("ch").appendChild(b)})}
+function show(){$("t").classList.add("hid");$("bar").classList.remove("hid");$("hud").classList.remove("hid");
+const e=EV.find(x=>x[0]==G.q[G.qi]);if(!e){G.wk++;newWeek();return show()}
+bar();hud();setImg(IM[e[2]]);$("note").textContent=G.note||"";$("txt").textContent=e[5];
+btns(e[6].map(c=>[c[0],()=>pick(c)]))}
+function pick(c){const d=fx(c[1],1);G.note=fmt(d);G.qi++;
+const dead=K.find(k=>G.S[k]<=0||G.S[k]>=100);if(dead)return over(dead);
+if(G.qi>=G.q.length){G.wk++;newWeek();G.note=(fmt(d)+(G.note?"\n"+G.note:"")).trim();const d2=K.find(k=>G.S[k]<=0||G.S[k]>=100);if(d2)return over(d2)}save();show();scrollTo(0,0)}
+function over(k){const hi=G.S[k]>=100,e=END[k],w=G.wk+1,y=yr();st.removeItem("pp_save");
+const best=+st.getItem("pp_best")||0;if(w>best){st.setItem("pp_best",w);st.setItem("pp_lvl",y)}
+G.over=1;hud();bar();setImg("church");$("note").textContent=e[0]+(hi?"":"");$("txt").textContent=`${e[hi?2:1]}\n\nYou served ${w} week${w>1?"s":""}, into Year ${y}.\nBest: ${Math.max(w,best)} week${Math.max(w,best)>1?"s":""}.`;
+btns([["Start again",()=>{start();scrollTo(0,0)}],["Title",title]])}
+function start(){G={S:{faith:50,community:50,money:50,bishop:50},wk:0,fl:{},q:[],qi:0,rec:[],note:""};newWeek();
+G.note="You are Fr Daniel, sent to St Anne's, a struggling parish in a wet northern town. Keep all four in balance: too little or too much of anything ends your time here.";save();show()}
+function title(){G=null;$("t").classList.remove("hid");$("bar").classList.add("hid");$("hud").classList.add("hid");setImg("church");$("note").textContent="";
+const b=+st.getItem("pp_best")||0;$("txt").textContent=b?`Best: ${b} weeks`:"";const sv=st.getItem("pp_save"),l=[];
+if(sv)l.push(["Continue",()=>{try{G=JSON.parse(sv);show()}catch(e){start()}}]);l.push(["New game",start]);btns(l)}
+window.__pp={get G(){return G},choose(i){$("ch").children[i].click()},title,EV};
+title();
 </script></body></html>
